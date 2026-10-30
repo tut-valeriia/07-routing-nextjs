@@ -5,6 +5,7 @@ export interface FetchNotesParams {
   page?: number;
   perPage?: number;
   search?: string;
+  tag?: string;
 }
 
 export interface FetchNotesResponse {
@@ -30,14 +31,24 @@ const getHeaders = () => {
 export async function fetchNotes(
   params: FetchNotesParams = {},
 ): Promise<FetchNotesResponse> {
-  const { page = 1, perPage = 12, search = "" } = params;
+  const { page = 1, perPage = 12, search = "", tag } = params;
+
+  const requestParams: Record<string, string | number> = {
+    page,
+    perPage,
+  };
+
+  if (search.trim()) {
+    requestParams.search = search.trim();
+  }
+
+  // Якщо tag передано і це не 'all' — додаємо у params для сервера
+  if (tag && tag.toLowerCase() !== "all") {
+    requestParams.tag = tag;
+  }
 
   const response = await axios.get<FetchNotesResponse>(BASE_URL, {
-    params: {
-      page,
-      perPage,
-      search: search.trim() ? search.trim() : undefined,
-    },
+    params: requestParams,
     headers: getHeaders(),
   });
 
